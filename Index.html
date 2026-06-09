@@ -1,0 +1,318 @@
+here<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Responsive Interactive PSU Schematic</title>
+    <style>
+        :root {
+            --chassis-color: #34495E;
+            --chassis-dark: #2C3E50;
+            --fan-bg: #1A252F;
+            --blade-color: #95A5A6;
+            --atx-color: #E67E22;
+            --pcie-color: #E74C3C;
+            
+            /* Responsive Font Scale based on viewport width */
+            --font-scale: clamp(1rem, 1vw + 0.5rem, 1.25rem);
+            --title-scale: clamp(1.5rem, 2vw + 1rem, 2rem);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #F0F3F4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+            /* Prevents iOS horizontal scroll bounce */
+            overflow-x: hidden;
+        }
+
+        /* Fluid Main Container */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: clamp(10px, 4vw, 30px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Title Area: Mobile-First Stack */
+        .header-section {
+            width: 100%;
+            text-align: center;
+            margin-bottom: clamp(15px, 3vw, 25px);
+        }
+
+        h1 {
+            color: var(--chassis-dark);
+            font-size: var(--title-scale);
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        p.subtitle {
+            color: #7F8C8D;
+            font-size: clamp(0.9rem, 1vw + 0.6rem, 1.1rem);
+            margin-bottom: 10px;
+        }
+
+        /* SVG Visualization Container */
+        .viz-view {
+            width: 100%;
+            max-width: 900px; /* Limits max desktop size */
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            padding: clamp(10px, 3vw, 20px);
+            border: 1px dashed #BDC3C7;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        /* Fluid SVG */
+        svg {
+            width: 100%;
+            height: auto;
+            display: block;
+            /* Ensures vector precision is prioritized over raster caching */
+            shape-rendering: geometricPrecision; 
+        }
+
+        /* Interactive Animation Class */
+        .fan-blades-group {
+            transform-origin: 200px 200px;
+        }
+
+        .spinning {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Interface Controller Block */
+        .control-panel {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Mobile-Ready Touch Button */
+        .btn {
+            background-color: #2980B9;
+            color: white;
+            border: none;
+            width: 100%;
+            /* Optimized for mobile touch: minimum height 48px */
+            min-height: 50px; 
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            -webkit-tap-highlight-color: transparent; /* Clean touch feedback */
+        }
+
+        .btn:hover {
+            background-color: #3498DB;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+            background-color: #1F618D;
+        }
+
+        /* Adaptive Status Badge */
+        .status-badge {
+            font-weight: bold;
+            width: 100%;
+            padding: 12px 15px;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            border: 1px solid #BDC3C7;
+            background-color: #FFF2F2;
+            color: #C0392B;
+            transition: all 0.3s ease;
+        }
+
+        .status-badge.active {
+            background-color: #EAF2F8;
+            color: #27AE60;
+            border-color: #27AE60;
+        }
+
+        /* Vector Annotation Styles */
+        .annotation-box {
+            fill: #FEF9E7;
+            stroke: #F4D03F;
+            stroke-width: 1;
+            rx: 4;
+        }
+
+        .annotation-text {
+            font-size: 11px;
+            font-weight: bold;
+            fill: #7F8C8D;
+        }
+
+        /* Responsive Breakpoint: Large Screens */
+        @media screen and (min-width: 768px) {
+            .header-section {
+                text-align: left;
+                align-self: flex-start;
+            }
+
+            .control-panel {
+                flex-direction: row-reverse;
+                justify-content: space-between;
+                max-width: 100%;
+                margin-top: 10px;
+            }
+
+            .btn {
+                width: auto;
+                padding-left: 40px;
+                padding-right: 40px;
+            }
+
+            .status-badge {
+                width: auto;
+                flex-grow: 1;
+                max-width: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <h1>Group 10: Power Supply Unit (PSU)</h1>
+        <p class="subtitle">Responsive Mobile-First Visualization (Vector SVG)</p>
+    </div>
+
+    <div class="viz-view" id="psuView">
+        <svg viewBox="0 0 550 420" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#2C3E50" />
+                </marker>
+            </defs>
+
+            <rect x="50" y="50" width="300" height="300" rx="8" fill="var(--chassis-color)" stroke="var(--chassis-dark)" stroke-width="4" />
+
+            <circle cx="200" cy="200" r="115" fill="var(--fan-bg)" stroke="#7F8C8D" stroke-width="3" />
+            
+            <g id="fanBlades" class="fan-blades-group">
+                <path d="M 200 200 L 200 90 A 20 20 0 0 1 220 100 L 205 200 Z" fill="var(--blade-color)" opacity="0.85"/>
+                <path d="M 200 200 L 286 130 A 20 20 0 0 1 298 148 L 200 207 Z" fill="var(--blade-color)" opacity="0.85"/>
+                <path d="M 200 200 L 300 240 A 20 20 0 0 1 290 260 L 200 210 Z" fill="var(--blade-color)" opacity="0.85"/>
+                <path d="M 200 200 L 225 305 A 20 20 0 0 1 203 312 L 195 200 Z" fill="var(--blade-color)" opacity="0.85"/>
+                <path d="M 200 200 L 110 278 A 20 20 0 0 1 100 258 L 192 195 Z" fill="var(--blade-color)" opacity="0.85"/>
+                <path d="M 200 200 L 95 160 A 20 20 0 0 1 110 142 L 197 192 Z" fill="var(--blade-color)" opacity="0.85"/>
+                <path d="M 200 200 L 150 98 A 20 20 0 0 1 172 92 L 200 195 Z" fill="var(--blade-color)" opacity="0.85"/>
+                
+                <circle cx="200" cy="200" r="28" fill="#7F8C8D" stroke="#BDC3C7" stroke-width="2" />
+                <circle cx="200" cy="200" r="8" fill="#34495E" />
+            </g>
+
+            <rect x="330" y="80" width="20" height="40" rx="2" fill="#111" stroke="#7F8C8D" />
+            <rect x="330" y="150" width="20" height="30" rx="2" fill="#111" stroke="#7F8C8D" />
+            <rect x="330" y="210" width="20" height="30" rx="2" fill="#111" stroke="#7F8C8D" />
+            <rect x="330" y="270" width="20" height="35" rx="2" fill="#111" stroke="#7F8C8D" />
+
+            <path d="M 350 100 Q 410 100 440 120" fill="none" stroke="var(--atx-color)" stroke-width="12" stroke-linecap="round" />
+            <path d="M 350 165 Q 400 165 440 190" fill="none" stroke="var(--pcie-color)" stroke-width="8" stroke-linecap="round" />
+            <path d="M 350 225 Q 390 225 440 240" fill="none" stroke="#F1C40F" stroke-width="6" stroke-linecap="round" />
+            <path d="M 350 287 Q 390 287 440 280" fill="none" stroke="#3498DB" stroke-width="6" stroke-linecap="round" />
+
+            <path d="M 60 20 L 110 20 L 140 100" fill="none" stroke="#2C3E50" stroke-width="1" marker-end="url(#arrow)" />
+            <rect x="10" y="5" width="105" height="30" class="annotation-box" />
+            <text x="15" y="17" class="annotation-text">140mm Cooling Fan</text>
+            <text x="15" y="29" class="annotation-text">Active Cooling Unit</text>
+
+            <path d="M 450 50 L 390 50 L 345 90" fill="none" stroke="#2C3E50" stroke-width="1" marker-end="url(#arrow)" />
+            <rect x="420" y="35" width="120" height="30" class="annotation-box" />
+            <text x="425" y="47" class="annotation-text">Modular Port Interface</text>
+            <text x="425" y="59" class="annotation-text">High-Efficiency Slots</text>
+
+            <path d="M 490 350 L 460 350 L 430 260" fill="none" stroke="#2C3E50" stroke-width="1" marker-end="url(#arrow)" />
+            <rect x="440" y="335" width="100" height="30" class="annotation-box" />
+            <text x="445" y="347" class="annotation-text">Output Cable</text>
+            <text x="445" y="359" class="annotation-text">Harness Assembly</text>
+        </svg>
+    </div>
+
+    <div class="control-panel">
+        <button class="btn" id="togglePowerBtn">
+            <svg style="width: 20px; height: 20px; vertical-align: middle; margin-right: 8px;" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6V12H16V14H10V6H12Z" />
+            </svg>
+            Toggle System Power
+        </button>
+        <div class="status-badge" id="powerStatus">State: STATIC (Standby Mode)</div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleBtn = document.getElementById('togglePowerBtn');
+        const fanGroup = document.getElementById('fanBlades');
+        const statusBadge = document.getElementById('powerStatus');
+        const psuVisualization = document.getElementById('psuView');
+        
+        let isPowerActive = false;
+
+        // Toggle Function: Updates all interaction states
+        function performPowerToggle(event) {
+            // Prevent event bubbling when clicking inside the SVG
+            if(event && event.stopPropagation) {
+                event.stopPropagation();
+            }
+            
+            isPowerActive = !isPowerActive;
+            
+            if (isPowerActive) {
+                // Apply 'spinning' animation class to vector group
+                fanGroup.classList.add('spinning');
+                statusBadge.textContent = "State: ACTIVE (Cooling Running)";
+                statusBadge.classList.add('active');
+            } else {
+                // Remove animation, instantly halting rotation
+                fanGroup.classList.remove('spinning');
+                statusBadge.textContent = "State: STATIC (Standby Mode)";
+                statusBadge.classList.remove('active');
+            }
+        }
+
+        // Attach listeners to both button and entire SVG canvas for flexibility
+        toggleBtn.addEventListener('click', performPowerToggle);
+        psuVisualization.addEventListener('click', performPowerToggle);
+        
+        // Touch Optimization: Clear active states quickly on mobile
+        toggleBtn.addEventListener('touchstart', (e) => {
+             // Optional: visual feedback already handled by :active CSS
+        }, {passive: true});
+    });
+</script>
+
+</body>
+  </html>
